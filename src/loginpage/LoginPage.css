@@ -1,0 +1,15 @@
+.login-background {
+  background-image: url('../assets/图片1.jpg'); /* 替换为你的背景图片路径 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+}
+
+.header-title {
+  position: absolute;
+  top: 20px; /* 调整标题距离顶部的距离 */
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}

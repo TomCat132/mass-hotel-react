@@ -1,0 +1,102 @@
+.recharge-page-container {
+  padding: 2%;
+  max-width: 90%;
+  margin: 0 auto;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2%;
+}
+
+.header .title {
+  font-size: 2em;
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.header .subtitle {
+  font-size: 1em;
+  color: #888;
+}
+
+.progress-bar {
+  margin-bottom: 2%;
+}
+
+.account-balance {
+  font-size: 1.125em;
+  margin-bottom: 2%;
+  text-align: left;
+}
+
+.recharge-plan-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2%;
+}
+
+.recharge-plan-card {
+  padding: 2%;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+}
+
+.recharge-plan-card .plan-type {
+  display: inline-block;
+  padding: 2% 4%;
+  background-color: #ff4d4f;
+  color: #ffffff;
+  border-radius: 4px;
+  margin-bottom: 2%;
+}
+
+.recharge-plan-card .bonus-amount {
+  color: #ff4d4f;
+  font-weight: bold;
+}
+
+.recharge-plan-card .expiration-date {
+  color: #faad14;
+}
+
+.button-container {
+  position: fixed;
+  bottom: 9%;
+  right: 5%;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .recharge-page-container {
+    padding: 4%;
+  }
+
+  .header .title {
+    font-size: 1.75em;
+  }
+
+  .header .subtitle {
+    font-size: 0.875em;
+  }
+
+  .account-balance {
+    font-size: 1em;
+  }
+
+  .button-container {
+    margin-top: 1.5%;
+  }
+}
+
+.next-member-level {
+  color: red;
+}
+
+.order-details{
+  padding: 5%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

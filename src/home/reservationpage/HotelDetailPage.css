@@ -1,0 +1,21 @@
+.hotel-detail-container {
+  padding: 16px;
+}
+
+.date-picker-section {
+  margin-bottom: 24px;
+}
+
+.room-list-section {
+  margin-top: 24px;
+}
+
+.ant-card-bordered {
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.ant-card-bordered:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}

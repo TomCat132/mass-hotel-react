@@ -1,0 +1,72 @@
+.reservation-container {
+  padding: 24px;
+}
+
+.search-section {
+  margin-bottom: 16px;
+}
+
+.options-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.location-info, .radius-selector {
+  flex: 1;
+}
+
+.radius-selector {
+  text-align: right;
+}
+
+.hotel-list {
+  margin-top: 24px;
+}
+
+.ant-input-search > .ant-input-group > .ant-input-group-addon:last-child .ant-input-search-button {
+  border-radius: 0 4px 4px 0;
+}
+
+.ant-select-selection--single {
+  border-radius: 4px;
+}
+
+.hotel-card {
+  margin-bottom: 16px;
+}
+
+.hotelData {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 85px;
+}
+
+.hotelName {
+  font-weight: bolder;
+}
+
+.address {
+  color: grey;
+  font-size: 12px;
+}
+
+.hotel-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.distance {
+  font-weight: bolder;
+  font-size: 12px;
+}
+
+.minPrice{
+  font-weight: bolder;
+  font-size: 12px;
+  color: red;
+}

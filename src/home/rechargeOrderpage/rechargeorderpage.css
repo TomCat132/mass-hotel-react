@@ -1,0 +1,20 @@
+.box-1{
+  font-size: large;
+  display: inline-block;
+  margin-left: 0.5%;
+  padding-bottom: 1%;
+  letter-spacing: 1px;
+}
+.box-1-1{
+  display: inline-block;
+  letter-spacing: 2%;
+  font-size: 15px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* 让容器高度为视窗的100%，确保垂直居中 */
+  text-align: center;
+}
