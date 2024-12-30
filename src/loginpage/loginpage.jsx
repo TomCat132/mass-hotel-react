@@ -4,7 +4,7 @@ import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import "antd/dist/reset.css";
 import "./LoginPage.css";
-import axios from "axios";
+import axios from "../axios"
 import { useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
@@ -18,7 +18,7 @@ const LoginPage = () => {
       password: values.password,
     };
     axios
-      .post("/api/user/login", user)
+      .post("/user/login", user)
       .then((res) => {
         if (res.data.code === 200) {
           message.success(res.data.data);

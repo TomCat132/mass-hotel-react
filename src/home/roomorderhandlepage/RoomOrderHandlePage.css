@@ -18,3 +18,8 @@
   height: 100vh; /* 让容器高度为视窗的100%，确保垂直居中 */
   text-align: center;
 }
+
+.s1{
+  position: fixed;
+  bottom: 10%;
+}

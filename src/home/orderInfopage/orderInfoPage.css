@@ -1,11 +1,11 @@
 .orderInfo {
-  background-color: #f0f2f5; /* 使用稍微浅一点的颜色 */
+  overflow: hidden; /* 确保没有滑动 */
+  background-color: #f0f2f5;
   width: 100%;
-  border-radius: 8px; /* 圆角边框 */
-  padding: 16px; /* 内边距 */
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* 阴影效果 */
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
-
 .orderInfo p {
   margin: 0 0 8px; /* 段落间距 */
   font-size: 14px; /* 字体大小 */

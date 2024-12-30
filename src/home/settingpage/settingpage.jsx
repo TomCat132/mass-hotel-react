@@ -5,15 +5,13 @@ import {
   KeyOutlined,
   PoweroffOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 
 import "antd/dist/reset.css"; // 确保全局引入Ant Design样式
 import "./settingpage.css";
-import axios from "axios";
-
+import axios from "../../axios";
 
 export default function SettingPage() {
-
   const navigate = useNavigate();
 
   /** 退出登陆 */
@@ -23,12 +21,15 @@ export default function SettingPage() {
       content: "你确定要退出登录吗？",
       cancelText: "取消",
       okText: "确认",
+      style: { top: 250 },
       onOk: () => {
         axios
-          .post("/api/user/logout")
+          .post("/user/logout")
           .then((res) => {
             if (res.data.code === 200) {
               message.success(res.data.data);
+              sessionStorage.removeItem("userInfo");
+              sessionStorage.removeItem("isSigned");
             } else {
               message.error(res.data.data);
             }
@@ -37,7 +38,7 @@ export default function SettingPage() {
             console.error("退出时发生错误", error);
           })
           .finally(() => {
-            navigate('/')
+            navigate("/");
           });
       },
     });
@@ -45,9 +46,9 @@ export default function SettingPage() {
 
   /** 前往修改密码页面 */
   const gotoEditPwdPage = () => {
-    navigate('/home/editpwd')
-  }
- 
+    navigate("/home/editpwd");
+  };
+
   const items = [
     {
       title: "修改个人信息",
@@ -73,10 +74,13 @@ export default function SettingPage() {
         dataSource={items}
         renderItem={(item) => (
           <List.Item onClick={item.action}>
-            <Space className="button-tar">
-              {item.icon}
-              <div>{item.title}</div>
-            </Space>
+            <div className="item">
+              <Space className="button-tar">
+                <span>{item.icon}</span>
+                <div>{item.title}</div>
+                <span></span>
+              </Space>
+            </div>
           </List.Item>
         )}
       />

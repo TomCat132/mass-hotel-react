@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { DatePicker, List, Card, Typography, Button, message } from 'antd';
 import { CalendarOutlined } from '@ant-design/icons';
 import './HotelDetailPage.css';
-import axios from 'axios';
+import axios from "../../axios";
 import moment from 'moment';
 import zhCN from 'antd/es/locale/zh_CN';
 import { ConfigProvider } from 'antd';
@@ -25,7 +25,7 @@ const HotelDetailPage = () => {
   const fetchRoomList = () => {
     if (!checkInDate || !checkOutDate) return;
     axios
-      .get('/api/hotel/getHotelRoomTypeList', {
+      .get('/hotel/getHotelRoomTypeList', {
         params: {
           hotelId: hotelId,
           checkInDate: checkInDate.format('YYYY-MM-DD'),

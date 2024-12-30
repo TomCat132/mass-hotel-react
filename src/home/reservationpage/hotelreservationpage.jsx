@@ -9,14 +9,19 @@ import {
   Space,
   Divider,
   message,
+  Tag,
+  Radio,
+  Checkbox,
 } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import "./HotelReservationPage.css";
-import axios from "axios";
+import axios from "../../axios";
 import moment from "moment";
+import { debounce } from "lodash";
 import zhCN from "antd/es/locale/zh_CN";
 import { ConfigProvider } from "antd";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux'; // Import Redux hooks
 
 const { Title, Text } = Typography;
 
@@ -29,14 +34,37 @@ const HotelReservationPage = () => {
   const [roomInfo, setRoomInfo] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
   const [userInfo, setUserInfo] = useState(null);
-
   const [roomBookingDto, setRoomBookingDto] = useState(null);
+  const dispatch = useDispatch();
+  const selectedVoucher = useSelector(state => state.selectedVoucher); // Get selected voucher from Redux store
+  const [validVoucherList, setValidVoucherList] = useState([]);
+
+  const memberLevelDetails = [
+    { level: "青铜", color: "brown", label: "青铜会员", discount: 1 },
+    { level: "白银", color: "silver", label: "白银会员", discount: 0.95 },
+    { level: "黄金", color: "gold", label: "黄金会员", discount: 0.9 },
+    { level: "铂金", color: "blue", label: "铂金会员", discount: 0.85 },
+    { level: "钻石", color: "purple", label: "钻石会员", discount: 0.8 },
+  ];
 
   useEffect(() => {
     axios
-      .get("/api/user")
+      .get("/user")
       .then((res) => {
         setUserInfo(res.data.data);
+      })
+      .catch(() => {
+        message.error("服务器异常");
+      });
+  }, []);
+
+  /** 获取有效优惠券列表 */
+  useEffect(() => {
+    axios
+      .get("/activity/voucher-list")
+      .then((res) => {
+        setValidVoucherList(res.data.data);
+        console.log("validVoucherList", res.data.data);
       })
       .catch(() => {
         message.error("服务器异常");
@@ -54,7 +82,7 @@ const HotelReservationPage = () => {
 
   const fetchRoomDetails = (id) => {
     axios
-      .get(`/api/room/query`, {
+      .get(`/room/query`, {
         params: { roomId: id },
       })
       .then((res) => {
@@ -69,17 +97,20 @@ const HotelReservationPage = () => {
       });
   };
 
+  /** 计算价格 */
   const calculateTotalPrice = () => {
     const newRoomBookingDto = {
       roomId: roomId,
       checkInDate: checkInDate,
       checkOutDate: checkOutDate,
       memberLevel: userInfo.memberLevel,
+      voucherId: selectedVoucher, // 传递选中的优惠券ID
     };
 
-    axios.post("/api/room/calculatePrice", newRoomBookingDto).then((res) => {
-      setTotalPrice(res.data.data);
-      setRoomBookingDto(newRoomBookingDto); // 更新状态变量
+    axios.post("/room/calculatePrice", newRoomBookingDto).then((res) => {
+      let calculatedPrice = res.data.data;
+      setTotalPrice(calculatedPrice);
+      setRoomBookingDto(newRoomBookingDto);
     });
   };
 
@@ -87,11 +118,18 @@ const HotelReservationPage = () => {
     if (checkInDate && checkOutDate && userInfo) {
       calculateTotalPrice();
     }
-  }, [checkInDate, checkOutDate, userInfo]);
+  }, [checkInDate, checkOutDate, userInfo, selectedVoucher]);
 
   const handleBack = () => {
     window.history.back();
   };
+
+  /** 重新计算价格 */
+  const debouncedRecalculateTotalPrice = debounce((e) => {
+    const voucherId = e.target.value;
+    dispatch({ type: 'SET_SELECTED_VOUCHER', payload: voucherId });
+    calculateTotalPrice();
+  }, 300); // 300ms 的防抖延迟
 
   const handleConfirmBooking = () => {
     if (!roomBookingDto) {
@@ -99,14 +137,13 @@ const HotelReservationPage = () => {
       return;
     }
 
-    // 直接使用状态变量 roomBookingDto
     const updatedRoomBookingDto = {
       ...roomBookingDto,
       userPayAmount: totalPrice,
     };
 
     axios
-      .post("/api/roomInfo/reserve", updatedRoomBookingDto)
+      .post("/roomInfo/reserve", updatedRoomBookingDto)
       .then((res) => {
         if (res.data.code === 200) {
           message.success("创建订单成功，请前往支付");
@@ -123,16 +160,24 @@ const HotelReservationPage = () => {
   return (
     <ConfigProvider locale={zhCN}>
       <div className="reservation-page-container">
-        <Row justify="space-between" align="middle" style={{ padding: "16px" }}>
-          <Button type="text" icon={<ArrowLeftOutlined />} onClick={handleBack}>
-            返回
-          </Button>
-          <Title level={3}>确认预定</Title>
-          <Button type="text">帮助</Button>
-        </Row>
+        <div className="top-nav">
+          <Row style={{ padding: "10px" }}>
+            <Button
+              type="text"
+              icon={<ArrowLeftOutlined />}
+              onClick={handleBack}
+            >
+              返回
+            </Button>
+            <Title level={3}>确认预定</Title>
+            <Button type="text">帮助</Button>
+          </Row>
+        </div>
+
         {roomInfo && (
           <Card
-            title={`您选择的房间：${roomInfo.roomName}`}
+            className="card-container"
+            title={`房间类型：${roomInfo.roomName}`}
             style={{ margin: "16px" }}
           >
             <Row gutter={[16, 16]}>
@@ -162,19 +207,55 @@ const HotelReservationPage = () => {
                   <Text>{roomInfo.todayPrice}元/晚</Text>
                 </Space>
               </Col>
-              <Col span={24}>
-                <Space direction="vertical">
-                  <Text strong>总价格：</Text>
-                  <Text>{totalPrice.toFixed(2)}元</Text>
-                </Space>
-              </Col>
             </Row>
             <Divider />
-            <Row justify="end" style={{ padding: "16px" }}>
-              <Button type="primary" onClick={handleConfirmBooking}>
-                提交订单
-              </Button>
-            </Row>
+            {userInfo && (
+              <div className="discountRegion">
+                <Checkbox checked disabled className="box1">
+                  {memberLevelDetails[userInfo.memberLevel].discount * 100}%
+                </Checkbox>
+                会员等级: &nbsp;
+                <Tag color={memberLevelDetails[userInfo.memberLevel].color}>
+                  {memberLevelDetails[userInfo.memberLevel].label}
+                </Tag>
+                <span className="check-box"></span>
+              </div>
+            )}
+            <Divider />
+            <div className="discountRegion">
+              <p>优惠券减免:</p>
+              <Radio.Group
+                value={selectedVoucher} // Use selected voucher from Redux store
+                onChange={debouncedRecalculateTotalPrice}
+                className="voucherBox"
+              >
+                {validVoucherList.map((voucher) => (
+                  <Radio
+                    key={voucher.voucherId}
+                    value={voucher.voucherId}
+                    className="voucherItem"
+                  >
+                    {voucher.voucherTitle}
+                  </Radio>
+                ))}
+              </Radio.Group>
+              <span className="check-box"></span>
+            </div>
+            <Divider />
+            <div className="totalPrice">
+              <div className="content">
+                <Text strong>最终支付金额:</Text>
+                <Text className="priceValue">{totalPrice.toFixed(2)}元</Text>
+
+                <Button
+                  type="primary"
+                  className="btn"
+                  onClick={handleConfirmBooking}
+                >
+                  提交订单
+                </Button>
+              </div>
+            </div>
           </Card>
         )}
       </div>

@@ -3,7 +3,12 @@
   font-weight: bold;
   background-color:transparent;
 }
-.botton-tar{
-  color: #fff;
-  margin-left: 2%;
+.item{
+  width: 120%;
+}
+.item:hover{
+  background-color: #73B3F3;
+}
+.button-tar{
+  margin-left: 5%;
 }

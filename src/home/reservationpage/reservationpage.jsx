@@ -1,82 +1,94 @@
 import React, { useEffect, useState } from "react";
-import { Input, Select, List, Typography, Divider, Card, message } from "antd";
+import {
+  Input,
+  List,
+  Typography,
+  Divider,
+  Card,
+  message,
+  Spin,
+  Button,
+} from "antd";
 import { SearchOutlined, EnvironmentOutlined } from "@ant-design/icons";
-import "./ReservationPage.css"; // 引入自定义样式
-import axios from "axios";
+import "./ReservationPage.css";
+import axios from "../../axios";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { setLocation } from "../../store/store.js";
 
-const { Option } = Select;
 const { Title, Text } = Typography;
 
 const ReservationPage = () => {
   const navigate = useNavigate();
-  const [latitude, setLatitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
-  const [Radius, setRadius] = useState(1);
-  const [hotels, setHotelList] = useState([]);
+  const dispatch = useDispatch();
 
-  /** 获取用户的位置 */
+  const location = useSelector((state) => state.location);
+  const [radius, setRadius] = useState(100);
+  const [hotels, setHotelList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
-        },
-        (error) => {
-          console.error("Error getting geolocation:", error);
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
-    }
+    axios
+      .get("/account/get-user-location-info")
+      .then((res) => {
+        const { lat, lon, city } = res.data.data;
+        dispatch(setLocation({ latitude: lat, longitude: lon, city: city }));
+        message.success("已定位您的位置信息~");
+        getHotelList(lat, lon);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  /** 查询酒店列表 */
-  const getHotelList = () => {
+  const getHotelList = (lat, lon) => {
+    setLoading(true);
     axios
-      .get("/api/hotel/getNearByHotelList", {
+      .get("/hotel/getNearByHotelList", {
         params: {
-          userLng: longitude || 104.085907, // 使用用户的经度，如果没有则使用默认值
-          userLat: latitude || 30.5335, // 使用用户的纬度，如果没有则使用默认值
-          queryRange: Radius,
+          userLng: lon,
+          userLat: lat,
+          queryRange: radius,
         },
       })
       .then((res) => {
         if (res.data.code === 200) {
-          if (res.data.data !== null) {
-            setHotelList(res.data.data);
-          } else {
-            setHotelList(null);
-          }
+          setHotelList(res.data.data);
         }
       })
       .catch(() => {
         message.error("服务器异常");
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
-  /**用户选择范围半径时触发 */
-  const handleRadiusChange = (value) => {
-    setRadius(value);
-    message.success("已更改搜索范围")
+  const handleRadiusChange = (e) => {
+    setRadius(e.target.value);
   };
 
-  /** 查看酒店详细可用房间类型列表 */
+  const handleSearch = () => {
+    if (isNaN(radius) || radius <= 0) {
+      message.error("请输入有效的搜索范围");
+      return;
+    }
+    message.success("已更改搜索范围");
+    getHotelList(location.latitude, location.longitude);
+  };
+
   const goToHotelDetailPage = (hotelId) => {
     navigate(`/home/hoteldetailPage/${hotelId}`);
   };
 
   useEffect(() => {
-    setTimeout(() => {
+    if (location.latitude && location.longitude) {
+      getHotelList(location.latitude, location.longitude);
+      setLoading(false);
+    } else {
       getUserLocation();
-    }, 1000);
-  }, []);
-
-// eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    getHotelList();
-  }, [Radius]); // 只有当 Radius 发生变化时才重新获取酒店列表
+    }
+  }, [JSON.stringify(location)]);
 
   return (
     <div className="reservation-container">
@@ -91,51 +103,55 @@ const ReservationPage = () => {
 
       <div className="options-section">
         <div className="location-info">
-          <EnvironmentOutlined />
-          <Text strong>成都</Text>
+          <EnvironmentOutlined onClick={getUserLocation}/>
+          <Text strong> {location.city}</Text>
         </div>
         <div className="radius-selector">
-          <Select
-            defaultValue={""}
+          <Input
+            placeholder="输入搜索范围 (km)"
             onChange={handleRadiusChange}
-            style={{ width: "100%" }}
-            size="large"
+            style={{ width: "75%", marginRight: "2px" }}
+            size="midle"
+          />
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            size="midle"
+            onClick={handleSearch}
           >
-            <Option value={""}>1 km </Option>
-            <Option value={1}>1 km</Option>
-            <Option value={5}>5 km</Option>
-            <Option value={10}>10 km</Option>
-            <Option value={20}>20 km</Option>
-          </Select>
+          </Button>
         </div>
       </div>
 
-      <Divider />
 
-      <div className="hotel-list">
-        <List
-          itemLayout="horizontal"
-          dataSource={hotels}
-          renderItem={(item) => (
-            <Card
-              className="hotel-card"
-              bordered={true}
-              onClick={() => goToHotelDetailPage(item.hotelId)} // 添加点击事件处理器
-            >
-              <div className="hotelData">
-                <Title level={5} className="hotelName">
-                  {item.hotelName}
-                </Title>
-                <Text className="address">{item.address}</Text>
-                <div className="hotel-details">
-                  <span className="distance">{item.distance.toFixed(2)}km</span>
-                  <span className="minPrice">起价: ¥{item.minPrice}</span>
+      <Spin spinning={loading}>
+        <div className="hotel-list">
+          <List
+            itemLayout="horizontal"
+            dataSource={hotels}
+            renderItem={(item) => (
+              <Card
+                className="hotel-card"
+                bordered={true}
+                onClick={() => goToHotelDetailPage(item.hotelId)}
+              >
+                <div className="hotelData">
+                  <Title level={5} className="hotelName">
+                    {item.hotelName}
+                  </Title>
+                  <Text className="address">{item.address}</Text>
+                  <div className="hotel-details">
+                    <span className="distance">
+                      {item.distance.toFixed(2)}km
+                    </span>
+                    <span className="minPrice">起价: ¥{item.minPrice}</span>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          )}
-        />
-      </div>
+              </Card>
+            )}
+          />
+        </div>
+      </Spin>
     </div>
   );
 };

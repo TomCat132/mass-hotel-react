@@ -4,7 +4,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import 'antd/dist/reset.css'; // 确保全局引入Ant Design样式
 import './editpwdpage.css';
-import axios from 'axios';
+import axios from '../../axios';
 
 export default function EditPwdPage() {
 
@@ -22,7 +22,7 @@ export default function EditPwdPage() {
       newPassword: values.newPassword,
       confirmPassword: values.confirmPassword,
     }
-    axios.put('/api/user/updatepwd', passwordDto)
+    axios.put('/user/update-pwd', passwordDto)
       .then(res => {
         if (res.data.code === 200) {
           message.success(res.data.data)

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import moment from "moment-timezone";
 import "antd/dist/reset.css"; // 确保全局引入Ant Design样式
 import "./rechargepage.css";
-import axios from "axios";
+import axios from "../../axios";
 
 const { Title, Text } = Typography;
 
@@ -16,11 +16,10 @@ export default function RechargePage() {
   const [timeLeft, setTimeLeft] = useState([]);
   const [orderId, setOrderId] = useState();
   const navigate = useNavigate();
+
   const fetchRechargePlans = async () => {
     try {
-      const response = await axios.get(
-        "/api/rechargePlan/validRechargePlanList"
-      );
+      const response = await axios.get("/rechargePlan/validRechargePlanList");
       const plans = response.data.data;
       console.log("Fetched plans:", plans);
       setRechargePlans(plans);
@@ -28,10 +27,10 @@ export default function RechargePage() {
       console.error("Failed to fetch recharge plans:", error);
     }
   };
+
   useEffect(() => {
     // 只调用一次
     fetchRechargePlans();
-
   }, []);
 
   useEffect(() => {
@@ -41,7 +40,7 @@ export default function RechargePage() {
         const updatedTimeLeft = rechargePlans.map((plan) => {
           const expiration = moment.tz(plan.expirationDate, "Asia/Shanghai"); // 确保时区一致
           if (now.isAfter(expiration)) {
-            return fetchRechargePlans();
+            return fetchRechargePlans;
           } else {
             const duration = moment.duration(expiration.diff(now));
             const days = Math.floor(duration.asDays());
@@ -75,13 +74,13 @@ export default function RechargePage() {
         userPayAmount: selectedPlan.userPayAmount,
         bonusAmount: selectedPlan.bonusAmount,
       };
-      axios.post("/api/rechargeOrder/createOrder", rechargeDto).then((res) => {
+      axios.post("/rechargeOrder/createOrder", rechargeDto).then((res) => {
         if (res.data.code === 200) {
           setOrderId(res.data.data);
           navigate(`/home/rechargeOrderPay/${res.data.data}`)
           message.success("充值订单创建成功！");
         } else {
-           message.error(res.data.message)
+          message.error(res.data.message)
         }
       })
         .catch(() => {
@@ -125,15 +124,21 @@ export default function RechargePage() {
         {rechargePlans.length > 0 ? (
           rechargePlans.map((plan) => (
             <div key={plan.planId} className="recharge-plan-card">
-              {plan.planType === 1 && <div className="plan-type">活动</div>}
+              {plan.planType === 1 ? (
+                <div className="plan-type">活动</div>
+              ) : (
+                <div className="plan-type">普通</div>
+              )}
               <div>充值金额: ¥{plan.userPayAmount.toFixed(2)}</div>
               <div className="bonus-amount">
                 赠送金额: ¥{plan.bonusAmount.toFixed(2)}
               </div>
               <div>总金额: ¥{plan.totalAmount.toFixed(2)}</div>
-              <div className="expiration-date">
-                到期时间: {getTimeLeft(plan.planId)}
-              </div>
+              {plan.planType === 1 && (
+                <div className="expiration-date">
+                  到期时间: {getTimeLeft(plan.planId)}
+                </div>
+              )}
               <Button
                 type="primary"
                 style={{
@@ -153,7 +158,7 @@ export default function RechargePage() {
             </div>
           ))
         ) : (
-          <div>加载中...</div> // 或者显示一个加载动画
+          <div>加载中...</div> 
         )}
       </div>
       <div className="button-container">

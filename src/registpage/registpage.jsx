@@ -4,7 +4,7 @@ import { UserOutlined, PhoneOutlined, LockOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import "antd/dist/reset.css";
 import "./registpage.css";
-import axios from "axios";
+import axios from "../axios";
 
 import { useNavigate } from 'react-router-dom';
 const { Title } = Typography;
@@ -18,7 +18,7 @@ const RegisterPage = () => {
       password: values.password,
     };
     axios
-      .post("/api/user/register", user)
+      .post("/user/register", user)
       .then((res) => {
         if (res.data.code === 200) {
       

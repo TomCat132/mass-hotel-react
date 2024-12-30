@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { SearchOutlined } from "@ant-design/icons"; // 删除 Popconfirm 的导入
+import { SearchOutlined } from "@ant-design/icons";
 import {
   List,
   Card,
@@ -11,12 +11,35 @@ import {
   message,
   Popconfirm,
 } from "antd";
-import axios from "axios";
-
+import axios from "../../axios";
 import { useNavigate } from "react-router-dom";
 import "./orderInfoPage.css";
 
 const { Text } = Typography;
+
+// 订单状态映射
+const orderStatusMap = {
+  0: "未支付",
+  1: "已支付",
+  2: "支付失败",
+  3: "已取消",
+  4: "退款中",
+  5: "退款成功",
+  6: "退款失败",
+  7: "订单失效",
+};
+
+// 状态颜色映射
+const statusColorMap = {
+  0: "green", // 未支付
+  1: "blue", // 已支付
+  2: "red", // 支付失败
+  3: "orange", // 已取消
+  4: "purple", // 退款中
+  5: "green", // 退款成功
+  6: "red", // 退款失败
+  7: "gray", // 订单失效
+};
 
 export default function OrderInfoPage() {
   const [orderList, setOrderList] = useState([]);
@@ -27,7 +50,7 @@ export default function OrderInfoPage() {
 
   const getOrderList = async () => {
     try {
-      const response = await axios.get("/api/user/orderlist");
+      const response = await axios.get("/user/orderlist");
       setOrderList(response.data.data);
     } catch (err) {
       console.error("Failed to fetch order list:", err);
@@ -40,7 +63,7 @@ export default function OrderInfoPage() {
   /**删除订单 */
   const deleteOrder = async (orderId) => {
     try {
-      await axios.put(`/api/user/deleteOrderById/${orderId}`);
+      await axios.put(`/user/deleteOrderById/${orderId}`);
       setOrderList(orderList.filter((order) => order.orderId !== orderId));
       message.success("订单删除成功！");
     } catch (err) {
@@ -64,25 +87,10 @@ export default function OrderInfoPage() {
       order.orderStatus.toString().includes(searchText)
   );
 
-  const getPaymentStatusColor = (status) => {
-    switch (status) {
-      case 0:
-        return "green";
-      case 1:
-        return "red";
-      case 2:
-        return "black";
-      default:
-        return "gray";
-    }
-  };
-
-  const renderOrderType = (orderId) => {
-      // 截取orderId 的前4位
-      const type = parseInt(orderId.substring(0, 4));
-      console.log("订单类型", type)
-      const typeText = type === 1013 ? "充值" : "消费";
-      return <Text strong>{typeText}</Text>;
+  const renderOrderTypeText = (orderId) => {
+    const type = parseInt(orderId.substring(0, 4));
+    console.log("订单类型", type);
+    return type === 1013 ? "充值" : "消费";
   };
 
   const goToOrderInfoPage = (orderId) => {
@@ -101,6 +109,7 @@ export default function OrderInfoPage() {
       console.error("未知订单类型:", orderId);
     }
   };
+
   return (
     <div style={{ position: "relative" }}>
       <Space direction="vertical" style={{ width: "100%" }}>
@@ -109,7 +118,10 @@ export default function OrderInfoPage() {
             position: "fixed",
             top: 0, // 搜索框固定在顶部
             zIndex: 1, // 确保搜索框位于内容之上
-            background: "#fff", // 可选：为搜索框设置背景色，以防止文字重叠
+            background: "#fff",
+            verticalAlign: "middle",
+            width: "62%",
+            marginLeft: "4%"
           }}
         >
           <div className="dnf1">
@@ -124,7 +136,7 @@ export default function OrderInfoPage() {
         </div>
         <List
           style={{
-            margin: "10px 0",
+            margin: "1% 1%",
           }}
           grid={{
             gutter: 16,
@@ -140,11 +152,12 @@ export default function OrderInfoPage() {
             <List.Item>
               <Card
                 className="orderInfo"
-                title={`订单号: ${item.orderId}`}
+                title={`类型: ${renderOrderTypeText(item.orderId)}`} // 直接调用 renderOrderType
                 extra={
                   <Space>
                     <Button
-                      type="link"
+                       type="primary"
+                    
                       onClick={() => goToOrderInfoPage(item.orderId)}
                     >
                       查看详情
@@ -155,27 +168,22 @@ export default function OrderInfoPage() {
                       okText="是"
                       cancelText="否"
                     >
-                      <Button type="link">删除</Button>
+                   <Button type="primary" danger>删除</Button>
                     </Popconfirm>
                   </Space>
                 }
               >
                 <div className="orderInfo">
-                  <p>类型：{renderOrderType(item.orderId)}</p>
+                  <p>订单号 {item.orderId}</p>
+
                   <p className="status">
                     订单状态：
                     <Text
-                      style={{ color: getPaymentStatusColor(item.orderStatus) }}
+                      style={{
+                        color: statusColorMap[item.orderStatus] || "black",
+                      }}
                     >
-                      {(item.orderStatus === 0 && "未支付") ||
-                        (item.orderStatus === 1 && "已支付") ||
-                        (item.orderStatus === 2 && "支付失败") ||
-                        (item.orderStatus === 3 && "已取消") ||
-                        (item.orderStatus === 4 && "退款中") ||
-                        (item.orderStatus === 5 && "退款成功") ||
-                        (item.orderStatus === 6 && "退款失败") ||
-                        (item.orderStatus === 7 && "订单失效") ||
-                        "未知状态"}
+                      {orderStatusMap[item.orderStatus] || "未知状态"}
                     </Text>
                   </p>
                   <p>创建时间：{new Date(item.createTime).toLocaleString()}</p>

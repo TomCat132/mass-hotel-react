@@ -1,0 +1,22 @@
+.content1 {
+  position: relative; /* 为了定位伪元素 */
+  border-left: 3px solid #f2f7fc;
+  padding-left: 10px;
+  margin-bottom: 16px;
+  font-style: italic;
+
+}
+.content1-1{
+  margin-bottom: 2px;
+}
+
+.content1::before {
+  content: "";
+  position: absolute;
+  top: 5px; /* 调整小圆点的位置 */
+  left: -3px; /* 调整小圆点的位置，使其位于左上角 */
+  width: 6px; /* 圆点的直径 */
+  height: 6px; /* 圆点的直径 */
+  background-color: #409eff; /* 圆点的颜色 */
+  border-radius: 50%; /* 圆形 */
+}
