@@ -1,0 +1,1 @@
+export const useApiPrefix = true; // 设置开关变量 dev:true  test:false
